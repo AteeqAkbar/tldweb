@@ -10,112 +10,76 @@ export const getUsers = async () => {
   return resualt;
 };
 
-// Sign Up create user
-export const SignupWithEmailPassword = (data, router) => {
-  console.log(
-    data,
-    ">>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-  );
-  const image = data.image
-    ? data.image
-    : "https://www.iconpacks.net/icons/1/free-user-icon-295-thumb.png";
+// login with email password
+
+// export const LoginWithEmailPassword = (data, router) => {
+//   console.log(data);
+//   auth
+//     .signInWithEmailAndPassword(data.gmail, data.password)
+//     .then((userCredential) => {
+//       // Signed in
+
+//       var user = userCredential.user;
+//       console.log(user, "login");
+
+//       router.push("/");
+//       // ...
+//     })
+//     .catch((error) => {
+//       console.log(error);
+//       var errorCode = error.code;
+//       var errorMessage = error.message;
+//     });
+// };
+
+//  login with google
+
+export const loginWithGoogle = (router, setUser) => {
   auth
-    .createUserWithEmailAndPassword(data.gmail, data.password)
-    .then((userCredential) => {
-      console.log(userCredential, "create user");
-      userCredential.user.sendEmailVerification().then(() => {
-        // Email verification sent!
+    .signInWithPopup(googleProvider)
+    .then(async (result) => {
+      const credential = result.credential;
+      // console.log(credential);
+
+      // This gives you a Google Access Token. You can use it to access the Google API.
+      // const token = credential.accessToken;
+      // The signed-in user info.
+      const user = result.user;
+      // console.log(user, "user><><><><");
+      setUser((prev) => {
+        return { ...prev, user };
+      });
+
+      const userData = await getSingleUser(user.uid);
+      console.log(userData, "userdata");
+      if (!userData.uid) {
         fireStore
           .collection("users")
-          .doc(userCredential.user.uid)
-          .set({
-            uid: userCredential.user.uid,
-            summry: {
-              displayName: data.firstName + data.lastName,
-              email: data.gmail,
-              image: image,
+          .doc(user.uid)
+          .set(
+            {
+              uid: user.uid,
+              summry: {
+                displayName: user.displayName,
+                email: user.email,
+                image: user.photoURL,
+              },
+              points: {
+                learningPoint: 100,
+                coachingPoint: 100,
+              },
+              followers: [""],
+              following: [""],
             },
-            points: {
-              learningPoint: 100,
-              coachingPoint: 100,
-            },
-          })
+            { merge: true }
+          )
           .then(() => {
             console.log("Document successfully written!");
             router.push("/");
           });
-
-        console.log("Email send");
-      });
-      // Signed in
-      var user = userCredential.user;
-      console.log(user, "Signed in");
-      // ...
-    })
-    .catch((error) => {
-      console.log(error);
-      var errorCode = error.code;
-      var errorMessage = error.message;
-      // ..
-    });
-};
-
-// login with email password
-
-export const LoginWithEmailPassword = (data, router) => {
-  console.log(data);
-  auth
-    .signInWithEmailAndPassword(data.gmail, data.password)
-    .then((userCredential) => {
-      // Signed in
-
-      var user = userCredential.user;
-      console.log(user, "login");
-      router.push("/");
-      // ...
-    })
-    .catch((error) => {
-      console.log(error);
-      var errorCode = error.code;
-      var errorMessage = error.message;
-    });
-};
-
-//  login with google
-
-export const loginWithGoogle = (router) => {
-  auth
-    .signInWithPopup(googleProvider)
-    .then((result) => {
-      const credential = result.credential;
-      console.log(credential);
-
-      // This gives you a Google Access Token. You can use it to access the Google API.
-      const token = credential.accessToken;
-      // The signed-in user info.
-      const user = result.user;
-      console.log(user);
-
-      fireStore
-        .collection("users")
-        .doc(user.uid)
-        .set({
-          uid: user.uid,
-          summry: {
-            displayName: user.displayName,
-            email: user.email,
-            image: user.photoURL,
-          },
-          points: {
-            learningPoint: 100,
-            coachingPoint: 100,
-          },
-        })
-        .then(() => {
-          console.log("Document successfully written!");
-          router.push("/");
-        });
-
+      } else {
+        router.push("/");
+      }
       // ...
     })
     .catch((error) => {
@@ -133,8 +97,8 @@ export const loginWithGoogle = (router) => {
 
 //  update profile image
 
-export default function updateImage(image) {
-  var Ref = fireStore.collection("users").doc("pSkpYdJuDpubniZvPTtl");
+export default function updateImage(image, uid) {
+  var Ref = fireStore.collection("users").doc(uid);
 
   // Set the "capital" field of the city 'DC'
   return Ref.update({
@@ -182,9 +146,9 @@ export const getSingleUser = (id) => {
     });
 };
 
-export const updateProfile = (data) => {
+export const updateProfile = (data, uid) => {
   console.log(data, "update data");
-  var Ref = fireStore.collection("users").doc("99iQxqVi3gc7ppU7Yvq8cSd26Wr1");
+  var Ref = fireStore.collection("users").doc(uid);
   return Ref.update({
     ...data,
   })
