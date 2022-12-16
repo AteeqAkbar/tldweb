@@ -160,8 +160,16 @@ const Index = () => {
                 </button>
               )}
             </div>
-            {error && <p>{error}</p>}
-            {errors && <p>{errors}</p>}
+            {error && (
+              <p className="leading-[28px] text-[16px] font-medium text-center">
+                {error}
+              </p>
+            )}
+            {errors && (
+              <p className="leading-[28px] text-[16px] font-medium text-center">
+                {errors}
+              </p>
+            )}
 
             <div className="mt-[16px]">
               <h1 className="leading-[28px] text-[16px] font-medium text-center">

@@ -67,11 +67,11 @@ export const useSinup = () => {
     }
   };
 
-  useEffect(() => {
-    return () => {
-      setCancelled(true);
-    };
-  }, []);
+  // useEffect(() => {
+  //   return () => {
+  //     setCancelled(true);
+  //   };
+  // }, []);
 
   return { signup, error, isPanding };
 };
