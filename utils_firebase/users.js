@@ -1,36 +1,19 @@
 import { auth, fireStore, googleProvider } from "./config";
+import firebase from "firebase/app";
 
+// get feature mentors
 export const getUsers = async () => {
   const resualt = [];
-  const data = await fireStore.collection("users").get();
+  const data = await fireStore
+    .collection("users")
+    .where("feature", "==", true)
+    .get();
 
   data.docs.forEach((doc) => {
     resualt.push({ id: doc.id, ...doc.data() });
   });
   return resualt;
 };
-
-// login with email password
-
-// export const LoginWithEmailPassword = (data, router) => {
-//   console.log(data);
-//   auth
-//     .signInWithEmailAndPassword(data.gmail, data.password)
-//     .then((userCredential) => {
-//       // Signed in
-
-//       var user = userCredential.user;
-//       console.log(user, "login");
-
-//       router.push("/");
-//       // ...
-//     })
-//     .catch((error) => {
-//       console.log(error);
-//       var errorCode = error.code;
-//       var errorMessage = error.message;
-//     });
-// };
 
 //  login with google
 
@@ -75,10 +58,10 @@ export const loginWithGoogle = (router, setUser) => {
           )
           .then(() => {
             console.log("Document successfully written!");
-            router.push("/");
+            router.push("/home");
           });
       } else {
-        router.push("/");
+        router.push("/home");
       }
       // ...
     })
@@ -159,4 +142,27 @@ export const updateProfile = (data, uid) => {
       // The document probably doesn't exist.
       console.error("Error updating document: ", error);
     });
+};
+
+// follow a user
+export const followUser = async (followingId, userId) => {
+  try {
+    // add id in following table of login user
+    await fireStore
+      .collection("users")
+      .doc(userId)
+      .update({
+        following: firebase.firestore.FieldValue.arrayUnion(followingId),
+      });
+    // add id in follower table
+
+    await fireStore
+      .collection("users")
+      .doc(followingId)
+      .update({
+        followers: firebase.firestore.FieldValue.arrayUnion(userId),
+      });
+  } catch (error) {
+    console.log(error);
+  }
 };

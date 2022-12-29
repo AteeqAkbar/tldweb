@@ -1,91 +1,48 @@
 import Link from "next/link";
 import React, { Fragment, useEffect, useState } from "react";
-import { getAllMentorSeasions } from "../../proxyLayer/api-util";
-import { getAllSessions } from "../../utils_firebase/sessions";
+import { getSessionByUserSkills } from "../../utils_firebase/sessions";
 import Spinner from "../spinner";
+import SessionItem from "./upCommingSessionItem";
 
-const UpCommingSection = () => {
-  // const seasions = getAllMentorSeasions();
-  const [sessions, setSessions] = useState([]);
-  // const Mentors = getAllMentors();
-  useEffect(() => {
-    async function name() {
-      const seasion = await getAllSessions();
-      console.log(seasion, ">>>>>>>>>>><<<LLLLLLLLKKKKKKKKKKK");
-      setSessions(seasion);
-    }
-    name();
-  }, []);
+const UpCommingSection = ({ sessions, title, dis }) => {
+  console.log(sessions, " UpCommingSection");
   if (!sessions) {
     return <Spinner />;
   }
-  console.log(sessions, "=========");
+
   return (
     <Fragment>
-      <div className="flex flex-col gap-6 mt-40">
+      <div className="flex flex-col gap-6 mt-40 ">
         <div className="m-auto">
-          <p className="text-[32px] font-semibold font-['Raleway'] leading-[38px] text-[#242424]">
-            Upcoming Sessions
+          <p className="text-[32px] text-center font-semibold font-['Raleway'] leading-[38px] text-[#242424]">
+            {title}
           </p>
         </div>
         <div className="m-auto">
-          <p className="text-[20px] font-medium leading-[23px] text-[#242424] font-['Raleway']">
-            Sign Up to one of our sessions and start your journey
+          <p className="text-[20px] px-2 text-center font-medium leading-[23px] text-[#242424] font-['Raleway']">
+            {dis}
           </p>
         </div>
       </div>
-      {/* <!-- Footer Cards --> */}
-      <div className="mx-[4.44%] ">
-        <div className="grid grid-cols-4  gap-[2.22%] my-[24px]  ">
-          {sessions.map((seasion) => {
-            return (
-              <Fragment key={Math.random()}>
-                <div
-                  className="flex flex-col gap-4   bg-[#F4F4F4] rounded-[12px]
-                "
-                >
-                  <div>
-                    <img
-                      src={seasion?.image}
-                      alt="img"
-                      className="w-full rounded-b-[30px] h-[204px] w-full"
-                    />
-                  </div>
-                  <div className="flex flex-col  mx-3">
-                    <div className="flex flex-row mb-3 justify-between">
-                      <p className="text-[16px] font-medium leading-[19px] font-['Raleway'] text-[#8B8B8B]">
-                        {seasion?.students.length} +Attendees
-                      </p>
-                      <p className="text-[16px] font-medium leading-[19px] font-['Raleway'] text-[#8B8B8B]">
-                        {/* {seasion?.startTime} */}
-                      </p>
-                    </div>
-                    <div className=" mb-4">
-                      <p className="text-[24px] leading-[28px] font-normal font-['Raleway'] text-black">
-                        {seasion?.title}
-                      </p>
-                    </div>
-                    <div className="flex pb-2 gap-2 mb-4">
-                      <img
-                        src={seasion?.instructor?.summry?.image}
-                        alt=""
-                        className="rounded-[50px] w-[10.52%]"
-                      />
-                      <p className="text-[16px] font-['Raleway'] leading-[19px] font-medium text-[#8B8B8B] pt-2">
-                        {seasion?.instructor?.summry?.displayName}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </Fragment>
-            );
-          })}
+
+      <div className="mx-[16px] xs:mx-[64px] ">
+        <div>
+          <div className="flex flex-wrap justify-center  gap-[2.22%] my-[24px]  ">
+            {sessions.length === 0
+              ? "We have no Recommended sessions for you"
+              : sessions.map((session) => {
+                  return (
+                    <Fragment key={Math.random()}>
+                      <SessionItem session={session} />
+                    </Fragment>
+                  );
+                })}
+          </div>
         </div>
       </div>
 
       {/* <!-- Footer button --> */}
       <div className="flex my-16">
-        `
         <div className="m-auto bg-[#F3F3F4] rounded-[7px]">
           <button className="text-[20px] font-medium text-[#1C2D56] leading-[24px] font-['Raleway'] px-5 py-1 hover:bg-[#1C2D56] hover:text-white">
             <Link href="/calender">Calender</Link>

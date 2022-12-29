@@ -33,16 +33,14 @@ export const createSession = (data, router, id) => {
 };
 
 // students register session
-export const registorSession = (data) => {
-  var Ref = fireStore.collection("sessions").doc("7DtzbUdeAYcfRX6Z5dRX");
+export const registorSession = (sessionId, uid) => {
+  var Ref = fireStore.collection("sessions").doc(sessionId);
 
   // if(userPoins>sessionPoins){
   if (true) {
     updatePoint();
     Ref.update({
-      students: firebase.firestore.FieldValue.arrayUnion(
-        "new usersss id added in to session"
-      ),
+      students: firebase.firestore.FieldValue.arrayUnion(uid),
     });
     console.log("update ho gya he");
   } else {
@@ -63,4 +61,86 @@ export const getAllSessions = async () => {
     });
   }
   return allSessions;
+};
+// filter session by tags
+export const filterSessionByTag = async (tag) => {
+  console.log("filterSessionByTag");
+  const allSessions = [];
+  const session = await fireStore
+    .collection("sessions")
+    .where("tags", "array-contains", tag)
+    .get();
+  // console.log(session.docs);
+  for (const doc of session.docs) {
+    const user = await getSingleUser(doc.data().instructor);
+    allSessions.push({
+      id: doc.id,
+      ...doc.data(),
+      instructor: user,
+    });
+  }
+  return allSessions;
+};
+
+//  get session by id
+export const getSessionById = async (id) => {
+  const allStudents = [];
+
+  const doc = await fireStore.collection("sessions").doc(id).get();
+  // console.log(doc);
+  if (doc.exists) {
+    // console.log("datasasas", doc.data());
+    const instructor = await getSingleUser(doc.data().instructor);
+    for (const element of doc.data().students) {
+      const user = await getSingleUser(element);
+      allStudents.push(user);
+    }
+    return { ...doc.data(), students: allStudents, instructor };
+    // return doc.data();
+  } else {
+    // doc.data() will be undefined in this case
+    // console.log("No such document!");
+    return "No such document!";
+  }
+};
+//  filter session by user intrest
+export const getSessionByUserSkills = async (data) => {
+  try {
+    const allfilterSession = [];
+    const doc = await fireStore
+      .collection("sessions")
+      .where("tags", "array-contains-any", data)
+      .get();
+    for (const element of doc.docs) {
+      const user = await getSingleUser(element.data().instructor);
+      allfilterSession.push({ ...element.data(), instructor: user });
+    }
+    console.log(allfilterSession);
+    return allfilterSession;
+  } catch (error) {
+    console.log(error);
+  }
+};
+//  get all session in which user register
+export const getSessionInUserRegister = async (id) => {
+  try {
+    const allfilterSession = [];
+    const doc = await fireStore
+      .collection("sessions")
+      .where("students", "array-contains", id )
+      .get();
+    console.log(doc);
+    if (!doc.empty) {
+      for (const element of doc.docs) {
+        const user = await getSingleUser(element.data().instructor);
+        allfilterSession.push({ ...element.data(), instructor: user });
+      }
+      console.log(allfilterSession);
+      return allfilterSession;
+    } else {
+      return "You are not register any Sessions";
+    }
+  } catch (error) {
+    console.log(error);
+  }
 };

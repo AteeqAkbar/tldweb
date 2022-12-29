@@ -65,16 +65,30 @@ const FeatureMentor = () => {
   };
   return (
     <Fragment>
-      <h2 className="text-3xl px-2 mt-6 font-bold"> FeatureMentor</h2>
-      <OwlCarousel
-        className="owl-theme"
-        loop
-        dots={false}
-        animateIn={true}
-        {...options}
-      >
-        <Card mentors={Mentors} />
-      </OwlCarousel>
+      <div className="ml-[62px] mt-[64px]">
+        <div className="flex justify-between ml-6 mr-[64px]">
+          <h2 className="text-3xl   font-bold"> FeatureMentor</h2>
+          <div className="flex gap-2 justify-between items-center ">
+            <p className="text-[20px] text-[#909090] leading-[23px] ">
+              Explore
+            </p>
+            <img
+              src="/img/Arrow.png"
+              alt="Arrow Image"
+              className="object-cover mt-[6px]"
+            />
+          </div>
+        </div>
+        <OwlCarousel
+          className="owl-theme"
+          loop
+          dots={false}
+          animateIn={true}
+          {...options}
+        >
+          <Card mentors={Mentors} />
+        </OwlCarousel>
+      </div>
     </Fragment>
   );
 };
