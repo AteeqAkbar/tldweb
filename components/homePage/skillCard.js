@@ -17,6 +17,7 @@ const SkillCard = ({ onClickSkills, skills }) => {
             {skills.map((element) => {
               return (
                 <div
+                  key={element.name}
                   onClick={() => {
                     onClickSkills(element.name);
                   }}
