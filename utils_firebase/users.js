@@ -1,17 +1,25 @@
 import { auth, fireStore, googleProvider } from "./config";
 import firebase from "firebase/app";
+// import { toast } from "react-toastify";
 
 // get feature mentors
-export const getUsers = async () => {
+export const getUsers = async (condition) => {
   const resualt = [];
-  const data = await fireStore
-    .collection("users")
-    .where("feature", "==", true)
-    .get();
+  if (condition) {
+    const data = await fireStore
+      .collection("users")
+      .where("feature", "==", true)
+      .get();
+    data.docs.forEach((doc) => {
+      resualt.push({ id: doc.id, ...doc.data() });
+    });
+  } else {
+    const data = await fireStore.collection("users").get();
+    data.docs.forEach((doc) => {
+      resualt.push({ id: doc.id, ...doc.data() });
+    });
+  }
 
-  data.docs.forEach((doc) => {
-    resualt.push({ id: doc.id, ...doc.data() });
-  });
   return resualt;
 };
 
@@ -65,15 +73,19 @@ export const loginWithGoogle = (router, setUser) => {
         });
         console.log("Document successfully written!");
         router.push("/home");
+        // toast.success("Successfully Sigin In");
       } else {
         setUser((prev) => {
           return { ...prev, user: userData };
         });
+        // toast.success("Successfully LogIn");
+
         router.push("/home");
       }
       // ...
     })
     .catch((error) => {
+      // toast.error(error.message);
       // Handle Errors here.
       console.log(error);
       const errorCode = error.code;
@@ -103,8 +115,8 @@ export default function updateImage(image, uid) {
       console.error("Error updating document: ", error);
     });
 }
-export const updatePoint = (params) => {
-  var Ref = fireStore.collection("users").doc("99iQxqVi3gc7ppU7Yvq8cSd26Wr1");
+export const updatePoint = async(params) => {
+  var Ref = await fireStore.collection("users").doc("99iQxqVi3gc7ppU7Yvq8cSd26Wr1");
   return Ref.update({
     // "points.learningPoint": learningPoint-sessionPoins,
     "points.learningPoint": 100 - 100,

@@ -1,13 +1,17 @@
-import { Fragment, useContext, useState } from "react";
+import { Fragment, useContext, useEffect, useState } from "react";
 import { useRef } from "react";
 import { storage } from "../../utils_firebase/config";
 import { createSession } from "../../utils_firebase/sessions";
 import { useRouter } from "next/router";
 import { AuthContext } from "../../contexts/auth_context";
 import Image from "next/image";
+import { getAllSkillsOnly } from "../../utils_firebase/skills";
+import SkillTag from "../../components/tiles/skillTag";
 
 export default function Profile() {
   const { user } = useContext(AuthContext);
+  const [skills, setskills] = useState([]);
+  const [intrest, setintrest] = useState([]);
 
   const router = useRouter();
 
@@ -36,29 +40,43 @@ export default function Profile() {
     }
   }
 
+  const handleSelectedChange = (seleteditem) => {
+    // console.log(fillterSkills(seleteditem));
+    setintrest(fillterSkills(seleteditem));
+  };
+  const fillterSkills = (data) => {
+    return data.map((ele) => ele.value);
+  };
+  useEffect(() => {
+    getAllSkillsOnly().then((data) => {
+      setskills(data);
+      // console.log(data);
+    });
+  }, []);
   let formData;
   function submitHandler(event) {
     event.preventDefault();
     const enteredStartTime = inputStartTime.current.value;
     const enteredEndTime = inputEndTime.current.value;
-    const enteredTags = inputTags.current.value;
+    // const enteredTags = inputTags.current.value;
     const enteredPoints = inputPoints.current.value;
     const enteredTiltle = inputTitle.current.value;
 
     // Spliting by comma...
-    const Tags = enteredTags.split(",");
-
+    // const Tags = enteredTags.split(",");
     formData = {
       Title: enteredTiltle,
       StartTime: enteredStartTime,
       EndTime: enteredEndTime,
-      Tags: Tags,
+      Tags: intrest,
       Points: enteredPoints,
       Image: Url,
     };
     console.log(formData);
     createSession(formData, router, user?.user.uid);
   }
+
+  // console.log(user.user.summry.displayName);
 
   return (
     <Fragment>
@@ -70,10 +88,77 @@ export default function Profile() {
                 <h3 className="text-lg font-medium leading-6 text-gray-900">
                   SessionForm
                 </h3>
-                <p className="mt-1 text-sm text-gray-600">
+                {/* <p className="mt-1 text-sm text-gray-600">
                   This information will be displayed publicly so be careful what
                   you share.
-                </p>
+                </p> */}
+                {/* Look like Intro Card */}
+                <div className="w-[100%] mt-[50px] bg-white rounded-[20px] h-[500px]">
+                  <div className="relative h-[200px]  mx-auto w-[200px]">
+                    <Image
+                      src={Url ? Url : user?.user?.summry.image}
+                      fill
+                      className="rounded-full my-[20px]"
+                      alt="img"
+                    />
+                  </div>
+                  <div className="w-[84.61%] mx-auto flex justify-between my-[32px]">
+                    <p className="text-[24px] leading-[28px] font-semibold">
+                      {user?.user?.summry?.displayName}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex mx-auto w-[69.5%] justify-between">
+                      <p className="text-[32px] font-semibold leading-[38px] text-[#1C2D56] text-center">
+                        {user?.user?.followers?.length}
+                      </p>
+                      <p className="text-[32px] leading-[38px] font-semibold text-[#1C2D56] text-center">
+                        {user?.user?.points?.coachingPoint +
+                          user?.user?.points?.learningPoint}
+                      </p>
+                    </div>
+
+                    <div className="flex w-[70%] ml-[45px] justify-between">
+                      <p className="text-[20px] leading-[23px] text-center text-[#1C2D56]">
+                        Followers
+                      </p>
+                      <p className="text-[20px] leading-[23px] text-center text-[#1C2D56]">
+                        Points
+                      </p>
+                    </div>
+                  </div>
+                  <div className="w-[48.07%] flex mx-auto justify-between mb-[32px] mt-[40px]">
+                    <Image
+                      src="/img/LinkedIn.png"
+                      alt="img"
+                      height={32}
+                      width={32}
+                      className="object-cover"
+                    />
+                    <Image
+                      src="/img/Discord.png"
+                      alt="img"
+                      height={32}
+                      width={32}
+                      className="object-cover"
+                    />
+                    <Image
+                      src="/img/Github.png"
+                      alt="img"
+                      height={32}
+                      width={32}
+                      className="object-cover"
+                    />
+                    <Image
+                      src="/img/Twitter (1).png"
+                      alt="img"
+                      height={32}
+                      width={32}
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+                {/* --- END Look like Intro Card --- */}
               </div>
             </div>
             <div className="mt-5 md:col-span-2 md:mt-0">
@@ -151,7 +236,15 @@ export default function Profile() {
                         >
                           Tags
                         </label>
-                        <div className="mt-1 flex rounded-md shadow-sm">
+                        {skills.length > 0 ? (
+                          <SkillTag
+                            handleSelectedChange={handleSelectedChange}
+                            skills={skills}
+                          />
+                        ) : (
+                          ""
+                        )}
+                        {/* <div className="mt-1 flex rounded-md shadow-sm">
                           <input
                             type="text"
                             name="company-website"
@@ -160,7 +253,7 @@ export default function Profile() {
                             className="block w-full h-9 flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                             placeholder="Please enter your Tags"
                           />
-                        </div>
+                        </div> */}
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-6">
@@ -171,7 +264,7 @@ export default function Profile() {
                         >
                           Points
                         </label>
-                        <div className="mt-1 flex rounded-md shadow-sm">
+                        {/* <div className="mt-1 flex rounded-md shadow-sm">
                           <input
                             type="text"
                             name="company-website"
@@ -180,6 +273,25 @@ export default function Profile() {
                             className="block w-full h-9 flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                             placeholder="Please enter Points"
                           />
+                        </div> */}
+                        <div className="mt-1 flex rounded-md shadow-sm">
+                          <select
+                            name="company-website"
+                            id="company-website"
+                            ref={inputPoints}
+                            className="block w-full h-9 flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 lg:text-lg pl-5 sm:text-sm"
+                          >
+                            <option value="10">10 Points</option>
+                            <option value="20">20 Points</option>
+                            <option value="30">30 Points</option>
+                            <option value="40">40 Points</option>
+                            <option value="50">50 Points</option>
+                            <option value="60">60 Points</option>
+                            <option value="70">70 Points</option>
+                            <option value="80">80 Points</option>
+                            <option value="90">90 Points</option>
+                            <option value="100">100 Points</option>
+                          </select>
                         </div>
                       </div>
                     </div>

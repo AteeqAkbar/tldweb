@@ -7,6 +7,7 @@ export const createSession = (data, router, id) => {
   fireStore
     .collection("sessions")
     .add({
+      approve: false,
       image: data.Image,
       instructor: id,
       students: ["HID06ysBc8cYx2rtsxvOAtOJT9o1"],
@@ -32,7 +33,6 @@ export const createSession = (data, router, id) => {
 // students register session
 export const registorSession = (sessionId, uid) => {
   var Ref = fireStore.collection("sessions").doc(sessionId);
-
   // if(userPoins>sessionPoins){
   if (true) {
     updatePoint();
@@ -40,15 +40,21 @@ export const registorSession = (sessionId, uid) => {
       students: firebase.firestore.FieldValue.arrayUnion(uid),
     });
     console.log("update ho gya he");
+    return "You are Register this Session";
   } else {
     return "Do not have enough points...";
   }
 };
 // get all sessions
-export const getAllSessions = async () => {
+export const getAllSessions = async (cond) => {
+  // console.log(firebase.firestore.Timestamp.fromDate(new Date()), "date");
   const allSessions = [];
-  const session = await fireStore.collection("sessions").get();
-  // console.log(session.docs);
+  const session = await fireStore
+    .collection("sessions")
+    .where("approve", "==", cond)
+    .where("startTime", ">=", firebase.firestore.Timestamp.fromDate(new Date()))
+    .get();
+  // console.log(session, "session");
   for (const doc of session.docs) {
     const user = await getSingleUser(doc.data().instructor);
     allSessions.push({
@@ -61,10 +67,11 @@ export const getAllSessions = async () => {
 };
 // filter session by tags
 export const filterSessionByTag = async (tag) => {
-  console.log("filterSessionByTag");
+  // console.log("filterSessionByTag",tag);
   const allSessions = [];
   const session = await fireStore
     .collection("sessions")
+    .where("approve", "==", true)
     .where("tags", "array-contains", tag)
     .get();
   // console.log(session.docs);
@@ -107,11 +114,21 @@ export const getSessionByUserSkills = async (data) => {
     console.log(data, "skillfilter");
     const doc = await fireStore
       .collection("sessions")
+      .where(
+        "startTime",
+        ">=",
+        firebase.firestore.Timestamp.fromDate(new Date())
+      )
+      .where("approve", "==", true)
       .where("tags", "array-contains-any", data)
       .get();
     for (const element of doc.docs) {
       const user = await getSingleUser(element.data().instructor);
-      allfilterSession.push({ ...element.data(), instructor: user });
+      allfilterSession.push({
+        id: element.id,
+        ...element.data(),
+        instructor: user,
+      });
     }
     console.log(allfilterSession);
     return allfilterSession;
@@ -126,6 +143,7 @@ export const getSessionInUserRegister = async (id) => {
     const allfilterSession = [];
     const doc = await fireStore
       .collection("sessions")
+      .where("approve", "==", true)
       .where("students", "array-contains", id)
       .get();
     console.log(doc);

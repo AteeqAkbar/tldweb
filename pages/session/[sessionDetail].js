@@ -1,4 +1,4 @@
-import React, { Fragment, use, useContext, useEffect } from "react";
+import React, { Fragment, useContext, useEffect } from "react";
 import IntrestsTile from "../../components/tiles/intrestsTile";
 import { getSessionById, registorSession } from "../../utils_firebase/sessions";
 import { useRouter } from "next/router";
@@ -8,29 +8,41 @@ import Spinner from "../../components/spinner";
 import { AuthContext } from "../../contexts/auth_context";
 import { followUser } from "../../utils_firebase/users";
 import Image from "next/image";
+import Link from "next/link";
+import Followbtn from "../../components/tiles/followbtn";
+import { toast } from "react-toastify";
 
 const SessionDetail = () => {
   const { user } = useContext(AuthContext);
   const [isLoaded, setIsLoaded] = useState([]);
   const router = useRouter();
   const id = router.query.sessionDetail;
-  // console.log(id, "id in dinamic");
 
   useEffect(() => {
     getSessionById(id).then((user) => {
       setIsLoaded(user);
     });
     // declare the async data fetching function
-  }, []);
+  }, [id]);
 
-  const onFollowHenddler = (id) => {
+  const onFollowHenddler = (id, name) => {
     console.log(id, "foll", user.user.uid);
+
     followUser(id, user.user.uid);
+    const resolveAfter3Sec = new Promise((resolve) =>
+      setTimeout(resolve, 1000)
+    );
+
+    toast.promise(resolveAfter3Sec, {
+      pending: "please wait ",
+      success: "You Follow " + name,
+      error: "Error 🤯",
+    });
   };
   if (isLoaded.length === 0) {
     return <Spinner />;
   }
-
+  console.log(isLoaded.instructor.uid, "id in dinamic");
   // const [A, B] =
   // console.log(A, B, "data");
   // console.log(isLoaded, "loaded.....", id);
@@ -71,22 +83,25 @@ const SessionDetail = () => {
             <div className="border-b-[2px]">
               Instructor
               <div className="flex justify-between border-[2px] rounded-[10px] mb-[20px] p-[10px]">
-                <div className="flex items-center">
-                  <div className="relative w-[32px] h-[32px]">
-                    <Image
-                      src={isLoaded.instructor.summry.image}
-                      alt=""
-                      fill
-                      className="object-cover rounded-full"
-                    />
+                <Link href={`/auth/${isLoaded.instructor.uid}`}>
+                  <div className="flex items-center">
+                    <div className="relative w-[32px] h-[32px]">
+                      <Image
+                        src={isLoaded.instructor.summry.image}
+                        alt=""
+                        fill
+                        className="object-cover rounded-full"
+                      />
+                    </div>
+                    <h1 className="font-bold ml-[15px] text-[#1C2D56]">
+                      {isLoaded.instructor.summry.displayName}
+                    </h1>
                   </div>
-                  <h1 className="font-bold ml-[15px] text-[#1C2D56]">
-                    {isLoaded.instructor.summry.displayName}
-                  </h1>
+                </Link>
+
+                <div>
+                  <Followbtn />
                 </div>
-                <button className="w-[74px] h-[26px] border-[1px] text-[#1C2D56] text-[16px] font-medium rounded-xl">
-                  Follow
-                </button>
               </div>
             </div>
             <div className="border-b-[2px] p-5 flex justify-around ">
@@ -120,7 +135,17 @@ const SessionDetail = () => {
 
             <div className="p-5">
               <div
-                onClick={() => registorSession(id, user.user.uid)}
+                onClick={() => {
+                  const data = registorSession(id, user.user.uid);
+                  const resolveAfter3Sec = new Promise((resolve) =>
+                    setTimeout(resolve, 1000)
+                  );
+                  toast.promise(resolveAfter3Sec, {
+                    pending: "please wait ",
+                    success: data,
+                    error: "Error 🤯",
+                  });
+                }}
                 className="w-[63.63%] cursor-pointer bg-[#E6E5E5] p-[30px]  mx-auto  flex justify-center"
               >
                 <p className="text-[40px] leading-[18px] text-[#1C2D56] m-auto">
